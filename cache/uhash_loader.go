@@ -95,6 +95,15 @@ func fillUHash(isOnfly bool) error {
 				userecRaw.RealName = [20]byte{67, 111, 100, 105, 100, 103, 77, 97, 110} // CodingMan
 				userecRaw.Nickname = [24]byte{175, 171} // ??
 				userecRaw.PasswdHash = [14]byte{98, 104, 119, 118, 79, 74, 116, 102, 84, 49, 84, 65, 73} // bhwvOJtfT1TAI
+				userecRaw.UFlag = ptttype.UF_BRDSORT|ptttype.UF_ADBANNER|ptttype.UF_DBCS_AWARE|ptttype.UF_DBCS_DROP_REPEAT|ptttype.UF_CURSOR_ASCII
+				userecRaw.UserLevel = ptttype.PERM_BASIC|ptttype.PERM_CHAT|ptttype.PERM_PAGE|ptttype.PERM_BM|ptttype.PERM_SYSSUBOP
+				userecRaw.NumLoginDays = 2
+				userecRaw.FirstLogin = 1600681288
+				userecRaw.LastLogin = 1600756094
+				userecRaw.LastHost = [16]byte{53, 57, 46, 49, 50, 52, 46, 49, 54, 55, 46, 50, 50, 54} // 59.124.167.226
+				// 使用此網站解碼中文
+				// https://dencode.com/en/string/bin?fbclid=IwAR35YkwOxg7_WG3lKBpfRWzYbtQkKscN6QWhSFCfdaAIj3oyix1VNKZs6HE
+				// userecRaw.Address =
 			}
 		}
 
