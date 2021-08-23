@@ -1,7 +1,12 @@
 package cache
 
 import (
+	"bytes"
+	"fmt"
+	"golang.org/x/text/encoding/traditionalchinese"
+	"golang.org/x/text/transform"
 	"io"
+	"io/ioutil"
 	"os"
 	"unsafe"
 
@@ -71,6 +76,17 @@ func LoadUHash() (err error) {
 
 var uHashLoaderInvalidUserID = 0
 
+// DecodeBig5 函式轉換 BIG5 to UTF-8
+func DecodeBig5(s []byte) ([]byte, error) {
+	I := bytes.NewReader(s)
+	O := transform.NewReader(I, traditionalchinese.Big5.NewDecoder())
+	d, e := ioutil.ReadAll(O)
+	if e != nil {
+		return nil, e
+	}
+	return d, nil
+}
+
 func fillUHash(isOnfly bool) error {
 	log.Infof("fillUHash: start: isOnfly: %v", isOnfly)
 	InitFillUHash(isOnfly)
@@ -93,16 +109,27 @@ func fillUHash(isOnfly bool) error {
 		if userecRaw != nil {
 			if userecRaw.UserID == [13]byte{83, 89, 83, 79, 80} { // SYSOP
 				userecRaw.RealName = [20]byte{67, 111, 100, 105, 100, 103, 77, 97, 110} // CodingMan
-				userecRaw.Nickname = [24]byte{175, 171} // ??
+
+				// 使用此網站解碼中文
+				// https://dencode.com/en/string/bin?fbclid=IwAR35YkwOxg7_WG3lKBpfRWzYbtQkKscN6QWhSFCfdaAIj3oyix1VNKZs6HE
+				userecRaw.Nickname = [24]byte{175, 171} // 神
+				// 參考些程式碼轉換成中文
+				// https://pylist.com/topic/156.html
+
+				s := []byte{userecRaw.Nickname[0], userecRaw.Nickname[1]}
+				s, _ = DecodeBig5(s)
+				fmt.Println(string(s))
+
 				userecRaw.PasswdHash = [14]byte{98, 104, 119, 118, 79, 74, 116, 102, 84, 49, 84, 65, 73} // bhwvOJtfT1TAI
 				userecRaw.UFlag = ptttype.UF_BRDSORT|ptttype.UF_ADBANNER|ptttype.UF_DBCS_AWARE|ptttype.UF_DBCS_DROP_REPEAT|ptttype.UF_CURSOR_ASCII
 				userecRaw.UserLevel = ptttype.PERM_BASIC|ptttype.PERM_CHAT|ptttype.PERM_PAGE|ptttype.PERM_BM|ptttype.PERM_SYSSUBOP
 				userecRaw.NumLoginDays = 2
-				userecRaw.FirstLogin = 1600681288
-				userecRaw.LastLogin = 1600756094
+				// 使用此網站把時間戳記轉換成人類可讀的時間
+				// https://www.epochconverter.com/
+				userecRaw.FirstLogin = 1600681288 // 2020年9月21日星期一 17:41:28 GMT+08:00
+				userecRaw.LastLogin = 1600756094 // 2020年9月22日星期二 14:28:14 GMT+08:00
 				userecRaw.LastHost = [16]byte{53, 57, 46, 49, 50, 52, 46, 49, 54, 55, 46, 50, 50, 54} // 59.124.167.226
-				// 使用此網站解碼中文
-				// https://dencode.com/en/string/bin?fbclid=IwAR35YkwOxg7_WG3lKBpfRWzYbtQkKscN6QWhSFCfdaAIj3oyix1VNKZs6HE
+
 				// userecRaw.Address =
 			}
 		}
