@@ -3,6 +3,7 @@ package cache
 import (
 	"bytes"
 	"fmt"
+	"github.com/Ptt-official-app/go-pttbbs/decode"
 	"golang.org/x/text/encoding/traditionalchinese"
 	"golang.org/x/text/transform"
 	"io"
@@ -113,12 +114,12 @@ func fillUHash(isOnfly bool) error {
 				// 使用此網站解碼中文
 				// https://dencode.com/en/string/bin?fbclid=IwAR35YkwOxg7_WG3lKBpfRWzYbtQkKscN6QWhSFCfdaAIj3oyix1VNKZs6HE
 				userecRaw.Nickname = [24]byte{175, 171} // 神
+				//
+				// userecRaw.Nickname
 				// 參考些程式碼轉換成中文
 				// https://pylist.com/topic/156.html
-
-				s := []byte{userecRaw.Nickname[0], userecRaw.Nickname[1]}
-				s, _ = DecodeBig5(s)
-				fmt.Println(string(s))
+				test, _ := decode.Big5toUtf8(unsafe.Pointer(&userecRaw.Nickname), 24)
+				fmt.Println(string(test))
 
 				userecRaw.PasswdHash = [14]byte{98, 104, 119, 118, 79, 74, 116, 102, 84, 49, 84, 65, 73} // bhwvOJtfT1TAI
 				userecRaw.UFlag = ptttype.UF_BRDSORT|ptttype.UF_ADBANNER|ptttype.UF_DBCS_AWARE|ptttype.UF_DBCS_DROP_REPEAT|ptttype.UF_CURSOR_ASCII
@@ -129,8 +130,9 @@ func fillUHash(isOnfly bool) error {
 				userecRaw.FirstLogin = 1600681288 // 2020年9月21日星期一 17:41:28 GMT+08:00
 				userecRaw.LastLogin = 1600756094 // 2020年9月22日星期二 14:28:14 GMT+08:00
 				userecRaw.LastHost = [16]byte{53, 57, 46, 49, 50, 52, 46, 49, 54, 55, 46, 50, 50, 54} // 59.124.167.226
-
-				// userecRaw.Address =
+				userecRaw.Address = [50]byte{183, 115, 166, 203, 191, 164, 164, 108, 181, 234, 182, 109, 175, 81, 166, 179, 167, 248, 53, 52, 51, 184, 185}
+				test, _ = decode.Big5toUtf8(unsafe.Pointer(&userecRaw.Address), 50)
+				fmt.Println(string(test))
 			}
 		}
 
