@@ -109,29 +109,56 @@ func fillUHash(isOnfly bool) error {
 		// 先由這裡開始控制測試
 		if userecRaw != nil {
 			if userecRaw.UserID == [13]byte{83, 89, 83, 79, 80} { // SYSOP
+				// 開始載入用戶
+				var userID []byte
+				if userID, err = decode.ExtraToLetter(unsafe.Pointer(&userecRaw.UserID), 13); err != nil {
+					return err
+				}
+				fmt.Printf("\u001B[35m 用戶編號 %s\n", string(userID))
+
 				userecRaw.RealName = [20]byte{67, 111, 100, 105, 100, 103, 77, 97, 110} // CodingMan
+				var realname []byte
+				if realname, err = decode.ExtraToLetter(unsafe.Pointer(&userecRaw.RealName), 20); err != nil {
+					return err
+				}
+				fmt.Printf("\u001B[35m 用戶真名 %s\n", string(realname))
 
 				// 使用此網站解碼中文
 				// https://dencode.com/en/string/bin?fbclid=IwAR35YkwOxg7_WG3lKBpfRWzYbtQkKscN6QWhSFCfdaAIj3oyix1VNKZs6HE
 				userecRaw.Nickname = [24]byte{175, 171} // 神
-				//
-				// userecRaw.Nickname
-				// 參考些程式碼轉換成中文
-				// https://pylist.com/topic/156.html
-				test, _ := decode.Big5toUtf8(unsafe.Pointer(&userecRaw.Nickname), 24)
-				fmt.Println(string(test))
+				// 參考 https://pylist.com/topic/156.html 程式碼轉換成中文
+				var nickname []byte
+				if nickname, err = decode.Big5toUtf8(unsafe.Pointer(&userecRaw.Nickname), 24); err != nil {
+					return err
+				}
+				fmt.Printf("\u001B[35m 用戶別名 %s\n", string(nickname))
 
-				userecRaw.PasswdHash = [14]byte{98, 104, 119, 118, 79, 74, 116, 102, 84, 49, 84, 65, 73} // bhwvOJtfT1TAI
+				userecRaw.PasswdHash = [14]byte{98, 104, 119, 118, 79, 74, 116, 102, 84, 49, 84, 65, 73}
+				var passwdHash []byte
+				if passwdHash, err = decode.ExtraToLetter(unsafe.Pointer(&userecRaw.PasswdHash), 14); err != nil { // bhwvOJtfT1TAI
+					return err
+				}
+				fmt.Printf("\u001B[35m 用戶密碼 %s\n", string(passwdHash))
+
 				userecRaw.UFlag = ptttype.UF_BRDSORT|ptttype.UF_ADBANNER|ptttype.UF_DBCS_AWARE|ptttype.UF_DBCS_DROP_REPEAT|ptttype.UF_CURSOR_ASCII
 				userecRaw.UserLevel = ptttype.PERM_BASIC|ptttype.PERM_CHAT|ptttype.PERM_PAGE|ptttype.PERM_BM|ptttype.PERM_SYSSUBOP
+
 				userecRaw.NumLoginDays = 2
+				fmt.Printf("\u001B[35m 上網資歷 %d\n", userecRaw.NumLoginDays)
+
 				// 使用此網站把時間戳記轉換成人類可讀的時間
 				// https://www.epochconverter.com/
 				userecRaw.FirstLogin = 1600681288 // 2020年9月21日星期一 17:41:28 GMT+08:00
+
+				decode.StampToCst(int64(userecRaw.FirstLogin))
+
+
+
+
 				userecRaw.LastLogin = 1600756094 // 2020年9月22日星期二 14:28:14 GMT+08:00
 				userecRaw.LastHost = [16]byte{53, 57, 46, 49, 50, 52, 46, 49, 54, 55, 46, 50, 50, 54} // 59.124.167.226
 				userecRaw.Address = [50]byte{183, 115, 166, 203, 191, 164, 164, 108, 181, 234, 182, 109, 175, 81, 166, 179, 167, 248, 53, 52, 51, 184, 185}
-				test, _ = decode.Big5toUtf8(unsafe.Pointer(&userecRaw.Address), 50)
+				test, _ := decode.Big5toUtf8(unsafe.Pointer(&userecRaw.Address), 50)
 				fmt.Println(string(test))
 			}
 		}

@@ -12,10 +12,10 @@ import (
 func Big5toUtf8(ptr unsafe.Pointer, count int) ([]byte, error) {
 	var nonZero []byte
 	for i := 0; i < count; i++ {
-		if (*[1200]byte)(ptr)[i] == 0 {
+		if (*[100]byte)(ptr)[i] == 0 {
 			break
 		}
-		nonZero = append(nonZero, (*[1200]byte)(ptr)[i])
+		nonZero = append(nonZero, (*[100]byte)(ptr)[i])
 	}
 
 	I := bytes.NewReader(nonZero)
