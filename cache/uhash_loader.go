@@ -109,12 +109,17 @@ func fillUHash(isOnfly bool) error {
 		// 先由這裡開始控制測試
 		if userecRaw != nil {
 			if userecRaw.UserID == [13]byte{83, 89, 83, 79, 80} { // SYSOP
-				// 開始載入用戶
+				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 開始載入用戶
+
+				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 用戶編號
+
 				var userID []byte
 				if userID, err = decode.ExtraToLetter(unsafe.Pointer(&userecRaw.UserID), 13); err != nil {
 					return err
 				}
 				fmt.Printf("\u001B[35m 用戶編號 %s\n", string(userID))
+
+				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 用戶真名
 
 				userecRaw.RealName = [20]byte{67, 111, 100, 105, 100, 103, 77, 97, 110} // CodingMan
 				var realname []byte
@@ -123,8 +128,9 @@ func fillUHash(isOnfly bool) error {
 				}
 				fmt.Printf("\u001B[35m 用戶真名 %s\n", string(realname))
 
-				// 使用此網站解碼中文
-				// https://dencode.com/en/string/bin?fbclid=IwAR35YkwOxg7_WG3lKBpfRWzYbtQkKscN6QWhSFCfdaAIj3oyix1VNKZs6HE
+				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 用戶別名
+
+				// 使用此網站解碼中文 https://dencode.com/en/string/bin?fbclid=IwAR35YkwOxg7_WG3lKBpfRWzYbtQkKscN6QWhSFCfdaAIj3oyix1VNKZs6HE
 				userecRaw.Nickname = [24]byte{175, 171} // 神
 				// 參考 https://pylist.com/topic/156.html 程式碼轉換成中文
 				var nickname []byte
@@ -133,6 +139,8 @@ func fillUHash(isOnfly bool) error {
 				}
 				fmt.Printf("\u001B[35m 用戶別名 %s\n", string(nickname))
 
+				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 用戶密碼
+
 				userecRaw.PasswdHash = [14]byte{98, 104, 119, 118, 79, 74, 116, 102, 84, 49, 84, 65, 73}
 				var passwdHash []byte
 				if passwdHash, err = decode.ExtraToLetter(unsafe.Pointer(&userecRaw.PasswdHash), 14); err != nil { // bhwvOJtfT1TAI
@@ -140,17 +148,40 @@ func fillUHash(isOnfly bool) error {
 				}
 				fmt.Printf("\u001B[35m 用戶密碼 %s\n", string(passwdHash))
 
+				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 用戶標記
+
 				userecRaw.UFlag = ptttype.UF_BRDSORT|ptttype.UF_ADBANNER|ptttype.UF_DBCS_AWARE|ptttype.UF_DBCS_DROP_REPEAT|ptttype.UF_CURSOR_ASCII
+				fmt.Printf("\u001B[35m 用戶標記 %x\n", userecRaw.UFlag) // 會顯示 2000a60
+				// 2000a60 第一位為 0，就是
+				// 2000a60 第二位為 6，2 加 4 為 6，2 和 4 的值分別為 UF_BRDSORT 和 UF_ADBANNER
+				// 2000a60 第三位為 a，2 加 8 為 10 (a)，2 和 8 的值分別為 UF_DBCS_AWARE 和 UF_DBCS_DROP_REPEAT
+				// 2000a60 第七位為 2，2 的值為 UF_CURSOR_ASCII
+				// 每一位都會有四個值，分別是 1 2 4 8，相加為 15，因是 16 進位，15 再加 1 就會進位了
+
+				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 用戶權限
+
 				userecRaw.UserLevel = ptttype.PERM_BASIC|ptttype.PERM_CHAT|ptttype.PERM_PAGE|ptttype.PERM_BM|ptttype.PERM_SYSSUBOP
+
+				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 上網資歷
 
 				userecRaw.NumLoginDays = 2
 				fmt.Printf("\u001B[35m 上網資歷 %d\n", userecRaw.NumLoginDays)
 
-				// 使用此網站把時間戳記轉換成人類可讀的時間
-				// https://www.epochconverter.com/
-				userecRaw.FirstLogin = 1600681288 // 2020年9月21日星期一 17:41:28 GMT+08:00
 
-				decode.StampToCst(int64(userecRaw.FirstLogin))
+
+
+
+
+
+				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 第一次登入時間
+
+				// 使用此網站把時間戳記轉換成人類可讀的時間 https://www.epochconverter.com/
+				userecRaw.FirstLogin = 1600681288
+				var firstLogin string // 時間戳記
+				if firstLogin, err = decode.StampToCstStr(int64(userecRaw.FirstLogin)); err != nil { // 2020年9月21日星期一 17:41:28 GMT+08:00
+					return err
+				}
+				fmt.Printf("\u001B[35m 第一次登入時間 %s\n", firstLogin)
 
 
 
