@@ -103,27 +103,35 @@ func fillUHash(isOnfly bool) error {
 
 	uHashLoaderInvalidUserID = 0
 	log.Infof("fillUHash: to for-loop: MAX_USERS: %v", ptttype.MAX_USERS)
+	var count int
 	for ; ; uidInCache++ {
 		userecRaw, eachErr := ptttype.NewUserecRawWithFile(file)
 
 		// 先由這裡開始控制測試
 		if userecRaw != nil {
-			if userecRaw.UserID == [13]byte{83, 89, 83, 79, 80} { // SYSOP
+			count++
+
+			if userecRaw.UserID == [13]uint8{83, 89, 83, 79, 80} { // SYSOP
 				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 開始載入用戶
+
+				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 載入版本
+
+				userecRaw.Version = 4194
+				fmt.Printf("\u001B[35m 載入版本 %d\n", userecRaw.Version)
 
 				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 用戶編號
 
-				var userID []byte
-				if userID, err = decode.ExtraToLetter(unsafe.Pointer(&userecRaw.UserID), 13); err != nil {
+				var userID []uint8
+				if userID, err = decode.ExtraToLetter(unsafe.Pointer(&userecRaw.UserID), 13); err != nil { // SYSOP
 					return err
 				}
 				fmt.Printf("\u001B[35m 用戶編號 %s\n", string(userID))
 
 				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 用戶真名
 
-				userecRaw.RealName = [20]byte{67, 111, 100, 105, 100, 103, 77, 97, 110} // CodingMan
-				var realname []byte
-				if realname, err = decode.ExtraToLetter(unsafe.Pointer(&userecRaw.RealName), 20); err != nil {
+				userecRaw.RealName = [20]uint8{67, 111, 100, 105, 100, 103, 77, 97, 110}
+				var realname []uint8
+				if realname, err = decode.ExtraToLetter(unsafe.Pointer(&userecRaw.RealName), 20); err != nil { // CodingMan
 					return err
 				}
 				fmt.Printf("\u001B[35m 用戶真名 %s\n", string(realname))
@@ -131,47 +139,46 @@ func fillUHash(isOnfly bool) error {
 				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 用戶別名
 
 				// 使用此網站解碼中文 https://dencode.com/en/string/bin?fbclid=IwAR35YkwOxg7_WG3lKBpfRWzYbtQkKscN6QWhSFCfdaAIj3oyix1VNKZs6HE
-				userecRaw.Nickname = [24]byte{175, 171} // 神
+				userecRaw.Nickname = [24]uint8{175, 171}
 				// 參考 https://pylist.com/topic/156.html 程式碼轉換成中文
-				var nickname []byte
-				if nickname, err = decode.Big5toUtf8(unsafe.Pointer(&userecRaw.Nickname), 24); err != nil {
+				var nickname []uint8
+				if nickname, err = decode.Big5toUtf8(unsafe.Pointer(&userecRaw.Nickname), 24); err != nil { // 神
 					return err
 				}
 				fmt.Printf("\u001B[35m 用戶別名 %s\n", string(nickname))
 
 				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 用戶密碼
 
-				userecRaw.PasswdHash = [14]byte{98, 104, 119, 118, 79, 74, 116, 102, 84, 49, 84, 65, 73}
-				var passwdHash []byte
+				userecRaw.PasswdHash = [14]uint8{98, 104, 119, 118, 79, 74, 116, 102, 84, 49, 84, 65, 73}
+				var passwdHash []uint8
 				if passwdHash, err = decode.ExtraToLetter(unsafe.Pointer(&userecRaw.PasswdHash), 14); err != nil { // bhwvOJtfT1TAI
 					return err
 				}
 				fmt.Printf("\u001B[35m 用戶密碼 %s\n", string(passwdHash))
 
-				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 用戶標記
+				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 用戶標籤
 
 				userecRaw.UFlag = ptttype.UF_BRDSORT|ptttype.UF_ADBANNER|ptttype.UF_DBCS_AWARE|ptttype.UF_DBCS_DROP_REPEAT|ptttype.UF_CURSOR_ASCII
 				fmt.Printf("\u001B[35m 用戶標記 %x\n", userecRaw.UFlag) // 會顯示 2000a60
-				// 2000a60 第一位為 0，就是
+				// 2000a60 第一位為 0，就是沒有任何標籤的定義
 				// 2000a60 第二位為 6，2 加 4 為 6，2 和 4 的值分別為 UF_BRDSORT 和 UF_ADBANNER
 				// 2000a60 第三位為 a，2 加 8 為 10 (a)，2 和 8 的值分別為 UF_DBCS_AWARE 和 UF_DBCS_DROP_REPEAT
 				// 2000a60 第七位為 2，2 的值為 UF_CURSOR_ASCII
-				// 每一位都會有四個值，分別是 1 2 4 8，相加為 15，因是 16 進位，15 再加 1 就會進位了
+				// 每一位置的數值都會有四個值，分別是 1 2 4 8，相加為 15，因是 16 進位，15 再加 1 就會進位了
 
-				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 用戶權限
+				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 用戶等級
 
+				fmt.Printf("\u001B[35m 用戶等級 %o\n", userecRaw.UserLevel) // 會顯示 4000002007
 				userecRaw.UserLevel = ptttype.PERM_BASIC|ptttype.PERM_CHAT|ptttype.PERM_PAGE|ptttype.PERM_BM|ptttype.PERM_SYSSUBOP
+				// 4000002007 第一位為 7，1 加 2 加 4 為 7，1 2 4 的值分別為 ptttype.PERM_BASIC (基本權力) 和 ptttype.PERM_CHAT (進入聊天室) 和 ptttype.PERM_PAGE (找人聊天)
+				// 4000002007 第四位為 2，2 為 ptttype.PERM_BM 板主
+				// 4000002007 第十位為 4，4 為 PERM_SYSSUBOP 小組長
+				// 每一位置的數值都會有三個值，分別是 1 2 4，相加為 7，因是 8 進位，7 再加 1 就會進位了
 
 				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 上網資歷
 
 				userecRaw.NumLoginDays = 2
 				fmt.Printf("\u001B[35m 上網資歷 %d\n", userecRaw.NumLoginDays)
-
-
-
-
-
-
 
 				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 第一次登入時間
 
@@ -181,16 +188,65 @@ func fillUHash(isOnfly bool) error {
 				if firstLogin, err = decode.StampToCstStr(int64(userecRaw.FirstLogin)); err != nil { // 2020年9月21日星期一 17:41:28 GMT+08:00
 					return err
 				}
-				fmt.Printf("\u001B[35m 第一次登入時間 %s\n", firstLogin)
+				fmt.Printf("\u001B[35m 第一次登入台北時間 %s\n", firstLogin)
 
+				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 最後一次登入時間
 
+				userecRaw.LastLogin = 1600756094
+				var lastLogin string // 時間戳記
+				if lastLogin, err = decode.StampToCstStr(int64(userecRaw.LastLogin)); err != nil { // 2020年9月22日星期二 14:28:14 GMT+08:00
+					return err
+				}
+				fmt.Printf("\u001B[35m 最後一次登入台北時間 %s\n", lastLogin)
 
+				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 用戶最後登入網路位置
 
-				userecRaw.LastLogin = 1600756094 // 2020年9月22日星期二 14:28:14 GMT+08:00
-				userecRaw.LastHost = [16]byte{53, 57, 46, 49, 50, 52, 46, 49, 54, 55, 46, 50, 50, 54} // 59.124.167.226
-				userecRaw.Address = [50]byte{183, 115, 166, 203, 191, 164, 164, 108, 181, 234, 182, 109, 175, 81, 166, 179, 167, 248, 53, 52, 51, 184, 185}
-				test, _ := decode.Big5toUtf8(unsafe.Pointer(&userecRaw.Address), 50)
-				fmt.Println(string(test))
+				userecRaw.LastHost = [16]uint8{53, 57, 46, 49, 50, 52, 46, 49, 54, 55, 46, 50, 50, 54}
+				var lastHost []uint8
+				if lastHost, err = decode.ExtraToLetter(unsafe.Pointer(&userecRaw.LastHost), 16); err != nil { // 59.124.167.226
+					return err
+				}
+				fmt.Printf("\u001B[35m 用戶最後登入網路位置 %s\n", string(lastHost))
+
+				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 用戶住家地址
+
+				userecRaw.Address = [50]uint8{183, 115, 166, 203, 191, 164, 164, 108, 181, 234, 182, 109, 175, 81, 166, 179, 167, 248, 53, 52, 51, 184, 185}
+				var address []uint8
+				if address, err = decode.Big5toUtf8(unsafe.Pointer(&userecRaw.Address), 50); err != nil { // 新竹縣子虛鄉烏有村543號
+					return err
+				}
+				fmt.Printf("\u001B[35m 用戶住家地址 %s\n", string(address))
+
+				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 用戶年紀是否超過十八歲
+
+				userecRaw.Over18 = true
+				fmt.Printf("\u001B[35m 用戶年紀是否超過十八歲 %v\n", userecRaw.Over18)
+
+				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 呼叫器狀態
+
+				userecRaw.Pager = 1
+				fmt.Printf("\u001B[35m 呼叫器狀態 %d\n", userecRaw.Pager)
+
+				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 用戶職業
+
+				userecRaw.Career = [40]uint8{165, 254, 180, 186, 179, 110, 197, 233}
+				var career []uint8
+				if career, err = decode.Big5toUtf8(unsafe.Pointer(&userecRaw.Career), 40); err != nil { // 全景事業
+					return err
+				}
+				fmt.Printf("\u001B[35m 用戶事業 %s\n", string(career))
+
+				// >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> >>>>> 最後一次閱讀
+
+				userecRaw.LastSeen = 1600756094
+				var lastSeen string // 時間戳記
+				if lastSeen, err = decode.StampToCstStr(int64(userecRaw.LastSeen)); err != nil { // 2020年9月22日星期二 14:28:14 GMT+08:00
+					return err
+				}
+				fmt.Printf("\u001B[35m 最後一次閱讀 %s\n", lastSeen)
+			}
+			if userecRaw.UserID != [13]uint8{83, 89, 83, 79, 80} {
+				// fmt.Println(userecRaw.UserID)
 			}
 		}
 
@@ -206,6 +262,7 @@ func fillUHash(isOnfly bool) error {
 
 		userecRawAddToUHash(uidInCache, userecRaw, isOnfly)
 	}
+	fmt.Println("共有資料筆數為", count, "只有 4 筆有效資料")
 
 	if err != nil {
 		log.Errorf("fillUHash: unable to read passwd: file: %v e: %v", ptttype.FN_PASSWD, err)
